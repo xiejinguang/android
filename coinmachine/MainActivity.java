@@ -261,7 +261,7 @@ public class MainActivity extends Activity {
                            String url = mUrls[rd.nextInt(mUrls.length-1)];
                            webView.loadUrl(url);
                            try {
-                               sleep(rd3.nextInt(300*000)+20*000);
+                               sleep(rd3.nextInt(300000)+20*000);
                            } catch (InterruptedException e) {
                                e.printStackTrace();
                            }
