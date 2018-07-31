@@ -4,8 +4,12 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.net.http.SslError;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -16,18 +20,19 @@ public class TinyWebView extends WebView {
 
     public TinyWebView(Context context) {
         super(context);
+        initWebView();
     }
 
     public TinyWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initWebView();
     }
 
     public TinyWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initProgressBar(context);
-        openJavaScript();
-        setWebViewClient(new WebViewClient());
-        setWebChromeClient(new WebChromeClient());
+        initWebView();
+
     }
 
     private void initProgressBar(Context context) {
@@ -38,13 +43,61 @@ public class TinyWebView extends WebView {
         addView(progressbar);
     }
 
-    /**
-     * 方法描述：启用支持javascript
-     */
-    private void openJavaScript() {
-        WebSettings settings = getSettings();
-        settings.setJavaScriptEnabled(true);
+    //初始化配置WebView
+    protected  void initWebView() {
+
+        getSettings().setJavaScriptEnabled(true);//是否允许执行js，默认为false。设置true时，会提醒可能造成XSS漏洞
+        getSettings().setJavaScriptCanOpenWindowsAutomatically(true);//设置js可以直接打开窗口，如window.open()，默认为false
+        getSettings().setSupportMultipleWindows(true);
+
+        getSettings().setSupportZoom(false);//是否可以缩放，默认true
+        getSettings().setBuiltInZoomControls(true);//是否显示缩放按钮，默认false
+        getSettings().setUseWideViewPort(true);//设置此属性，可任意比例缩放。大视图模式
+        getSettings().setLoadWithOverviewMode(true);//和setUseWideViewPort(true)一起解决网页自适应问题
+        getSettings().setAppCacheEnabled(true);//是否使用缓存
+        getSettings().setDomStorageEnabled(true);//DOM Storage
+        getSettings().setAllowFileAccess(true);
+        getSettings().setLoadsImagesAutomatically(true);
+        getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);//加载https和http混合模式
+
+        getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        getSettings().setPluginState(WebSettings.PluginState.ON_DEMAND);
+
+//模拟微信浏览器
+
+        getSettings().setUserAgentString("User-Agent:Mozilla/5.0 (Linux; Android 5.0; zh-cn; GT-9000 Build/JZO54K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30 MicroMessenger/6.6.7");//设置用户代理，一般不用
+
+        //setWebChromeClient(new WebChromeClient());
+        //displayWebview.setWebViewClient(new WebViewClient());//不设置 下一步的网页就会在原生浏览器中打开
+        setWebViewClient(new WebViewClient(){
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+// TODO Auto-generated method stub
+//返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
+                Log.i("Coin", "shouldOverrideUrlLoading" + url);
+                view.loadUrl(url);
+                return true;
+            }
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                view.loadUrl(request.getUrl().toString());
+                Log.i("Coin", "shouldOverrideUrlLoading_req" + request);
+                return true;
+            }
+
+
+ /*           @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                // 不要使用super，否则有些手机访问不了，因为包含了一条 handler.cancel()
+                //super.onReceivedSslError(view, handler, error);
+                // 接受所有网站的证书，忽略SSL错误，执行访问网页
+                handler.proceed();
+            }*/
+        });
+
+
     }
+
+
 
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
