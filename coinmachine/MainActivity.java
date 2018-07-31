@@ -75,7 +75,7 @@ public class MainActivity extends Activity {
        //final WebView webView = new WebView(this);
         initWebView(webView);
 
-        webView.loadUrl("http://m.cqvfr34.cn./3872250_1749257/pelroo/3321667/kbuqivaigf/791057.htm?hfofnyh=qspwakxzhi&feurint=fwbs&ysrxpuhhr=01674&tkfu=ggmnnx#");
+        webView.loadUrl("http://1750528_3873685.6wkxt.cn./vVKS?3W7RS9ain=tswKG&from=singlemessage");
         Log.i(logTag,"访问："+mUrl);
 
         Switch sw = findViewById(R.id.airplaneswitch);
@@ -179,6 +179,7 @@ public class MainActivity extends Activity {
         String[] mUrls;
         int c1 =10;
         int c2 =5;
+        ThreadPoolProxy threadPoolProxy;
 
 /*        public AccessThread(String url, final WebView webView, int times, Context context) {
             this.url = url;
@@ -197,7 +198,7 @@ public class MainActivity extends Activity {
             this.mContext = context;
             this.rd2 = new Random(26461576);
             this.rd3 = new Random(16198456);
-
+            this.threadPoolProxy = new ThreadPoolProxy(5,20);
 
 
         }
@@ -226,50 +227,67 @@ public class MainActivity extends Activity {
                 Log.i(logTag,"ip:"+MobileData.getIPAddress(mContext));
 
                 //在UI线程调用WebView
-               h.post(new Runnable() {
-                   @Override
-                   public void run() {
-                       webView.clearHistory();
-                       webView.clearCache(false);
+                threadPoolProxy.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        webView.clearHistory();
+                        webView.clearCache(false);
 
-                       String av  = androidVersion[rd.nextInt(androidVersion.length-1)];
-                       String mt = mobiletype[rd.nextInt(mobiletype.length)-1];
+                        String av  = androidVersion[rd.nextInt(androidVersion.length-1)];
+                        String mt = mobiletype[rd.nextInt(mobiletype.length)-1];
 
 
-                       //苹果：User-Agent:Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Mobile/14A551 MicroMessenger/6.7.1 NetType/WIFI Language/zh_CN
+                        //苹果：User-Agent:Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Mobile/14A551 MicroMessenger/6.7.1 NetType/WIFI Language/zh_CN
 
-                       //安卓
-                       // User-Agent:Mozilla/5.0 (Linux; Android 7.1.1; MEIZU E3 Build/NGI77B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/6.2 TBS/044113 Mobile Safari/537.36 MicroMessenger/6.6.7.1321(0x26060736) NetType/WIFI Language/zh_CN
+                        //安卓
+                        // User-Agent:Mozilla/5.0 (Linux; Android 7.1.1; MEIZU E3 Build/NGI77B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/6.2 TBS/044113 Mobile Safari/537.36 MicroMessenger/6.6.7.1321(0x26060736) NetType/WIFI Language/zh_CN
 
-                       String p= av+"; "+mt+"B"+rd.nextInt(200);
+                        String p= av+"; "+mt+"B"+rd.nextInt(200);
 
-                       String mmv="MicroMessenger/6.6.7.1321(0x"+rd.nextInt(30000000)+")";
+                        String mmv="MicroMessenger/6.6.7.1321(0x"+rd.nextInt(30000000)+")";
 
-                       String android_ua="User-Agent:Mozilla/5.0 ("+p+") AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/6.2 TBS/044113 Mobile Safari/537.36 "+mmv+" NetType/4G Language/zh_CN";
-                       String ios_ua ="User-Agent:Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Mobile/14A551 MicroMessenger/6.7.1 NetType/4 Language/zh_CN";
+                        String android_ua="User-Agent:Mozilla/5.0 ("+p+") AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/6.2 TBS/044113 Mobile Safari/537.36 "+mmv+" NetType/4G Language/zh_CN";
+                        String ios_ua ="User-Agent:Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Mobile/14A551 MicroMessenger/6.7.1 NetType/4 Language/zh_CN";
 
-                       String f_ua = rd.nextBoolean()?android_ua:ios_ua;
-                       if(rd.nextInt(10)>8){
-                           webView.getSettings().setUserAgentString(ios_ua);
-                       }else{
-                           webView.getSettings().setUserAgentString(android_ua);
-                       }
+                        String f_ua = null;
+                        if(rd.nextInt(10)>8){
+                            f_ua=ios_ua;
 
-                       int t= rd2.nextInt(5);
+                        }else{
+                            f_ua=android_ua;
 
-                       for (int j = 0; j <t ; j++) {
-                           String url = mUrls[rd.nextInt(mUrls.length-1)];
-                           webView.loadUrl(url);
-                           try {
-                               sleep(rd3.nextInt(300000)+20*000);
-                           } catch (InterruptedException e) {
-                               e.printStackTrace();
-                           }
-                           Log.i(logTag,"访问："+url);
-                       }
 
-                   }
-               }) ;
+                        }
+                        Log.i(logTag,"WebView设置"+f_ua);
+
+
+                        int t= rd2.nextInt(5);
+
+                        for (int j = 0; j <t ; j++) {
+                            final String url = mUrls[rd.nextInt(mUrls.length-1)];
+                            final String finalF_ua = f_ua;
+                            try {
+                                h.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        webView.clearHistory();
+                                        webView.clearCache(false);
+                                        webView.getSettings().setUserAgentString(finalF_ua);
+                                        webView.loadUrl(url);
+                                    }
+                                });
+                                sleep(rd3.nextInt(300000)+20*000);
+
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            Log.i(logTag,"访问："+url);
+                        }
+
+                    }
+                }) ;
+
+
 
                 try {
                     switch(rd2.nextInt(30)) {
